@@ -52,6 +52,13 @@ const Customizer = () => {
 
   const handleSubmit = async (type) => {
     if (!prompt) return alert("Please enter a prompt");
+    try {
+    } catch (error) {
+      alert(error);
+    } finally {
+      setGeneratingImg(false);
+      setActiveEditorTab("");
+    }
   };
 
   const handleDecals = (type, result) => {
