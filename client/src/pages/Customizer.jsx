@@ -54,7 +54,7 @@ const Customizer = () => {
     if (!prompt) return alert("Please enter a prompt");
     try {
       setGeneratingImg(true);
-      const response = await fetch("http://localhost:8080/api/v1/dalle", {
+      const response = await fetch(config.production.backendUrl, {
         method: "POST",
         headers: {
           "content-Type": "application/json",
@@ -76,7 +76,6 @@ const Customizer = () => {
   };
 
   const handleDecals = (type, result) => {
-    console.log("type", type, result);
     const decalType = DecalTypes[type];
     state[decalType.stateProperty] = result;
     if (!activeFilterTab[decalType.filterTab]) {
