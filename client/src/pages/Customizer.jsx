@@ -54,7 +54,7 @@ const Customizer = () => {
     if (!prompt) return alert("Please enter a prompt");
     try {
       setGeneratingImg(true);
-      const response = await fetch(config.production.backendUrl, {
+      const response = await fetch(config.development.backendUrl, {
         method: "POST",
         headers: {
           "content-Type": "application/json",
@@ -76,7 +76,7 @@ const Customizer = () => {
   };
 
   const handleDecals = (type, result) => {
-    console.log(result);
+    
     const decalType = DecalTypes[type];
     state[decalType.stateProperty] = result;
     if (!activeFilterTab[decalType.filterTab]) {
