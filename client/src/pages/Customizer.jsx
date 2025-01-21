@@ -4,7 +4,7 @@ import { useSnapshot } from "valtio";
 
 import config from "../config/config";
 import state from "../store";
-import { download, stylishShirt } from "../assets";
+import { download } from "../assets";
 import { downloadCanvasToImage, reader } from "../config/helpers";
 import { EditorTabs, FilterTabs, DecalTypes } from "../config/constants";
 import { fadeAnimation, slideAnimation } from "../config/motion";
@@ -18,23 +18,25 @@ import {
 
 const Customizer = () => {
   const snap = useSnapshot(state);
+
   const [file, setFile] = useState("");
+
   const [prompt, setPrompt] = useState("");
   const [generatingImg, setGeneratingImg] = useState(false);
+
   const [activeEditorTab, setActiveEditorTab] = useState("");
   const [activeFilterTab, setActiveFilterTab] = useState({
-    longshirt: true,
+    logoShirt: true,
     stylishShirt: false,
   });
 
-  const generateTabcontent = () => {
+  // show tab content depending on the activeTab
+  const generateTabContent = () => {
     switch (activeEditorTab) {
       case "colorpicker":
         return <ColorPicker />;
-
       case "filepicker":
         return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
-
       case "aipicker":
         return (
           <AIPicker
@@ -44,7 +46,6 @@ const Customizer = () => {
             handleSubmit={handleSubmit}
           />
         );
-
       default:
         return null;
     }
@@ -52,12 +53,13 @@ const Customizer = () => {
 
   const handleSubmit = async (type) => {
     if (!prompt) return alert("Please enter a prompt");
+
     try {
       setGeneratingImg(true);
       const response = await fetch(config.development.backendUrl, {
         method: "POST",
         headers: {
-          "content-Type": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt,
@@ -76,9 +78,10 @@ const Customizer = () => {
   };
 
   const handleDecals = (type, result) => {
-    
     const decalType = DecalTypes[type];
+
     state[decalType.stateProperty] = result;
+
     if (!activeFilterTab[decalType.filterTab]) {
       handleActiveFilterTab(decalType.filterTab);
     }
@@ -88,14 +91,17 @@ const Customizer = () => {
     switch (tabName) {
       case "logoShirt":
         state.isLogoTexture = !activeFilterTab[tabName];
-
+        break;
       case "stylishShirt":
         state.isFullTexture = !activeFilterTab[tabName];
-
+        break;
       default:
-        state.isFullTexture = false;
         state.isLogoTexture = true;
+        state.isFullTexture = false;
+        break;
     }
+
+    // after setting the state, activeFilterTab is updated
 
     setActiveFilterTab((prevState) => {
       return {
@@ -117,7 +123,7 @@ const Customizer = () => {
       {!snap.intro && (
         <>
           <motion.div
-            key={"custom"}
+            key="custom"
             className="absolute top-0 left-0 z-10"
             {...slideAnimation("left")}
           >
@@ -130,12 +136,12 @@ const Customizer = () => {
                     handleClick={() => setActiveEditorTab(tab.name)}
                   />
                 ))}
-                {generateTabcontent()}
+
+                {generateTabContent()}
               </div>
             </div>
           </motion.div>
 
-          {/*  Side bar */}
           <motion.div
             className="absolute z-10 top-5 right-5"
             {...fadeAnimation}
@@ -144,10 +150,10 @@ const Customizer = () => {
               type="filled"
               title="Go Back"
               handleClick={() => (state.intro = true)}
-              customStyles={"w-fit px-4 py-2.5 font-bold text-sm"}
+              customStyles="w-fit px-4 py-2.5 font-bold text-sm"
             />
           </motion.div>
-          {/* bottom bar */}
+
           <motion.div
             className="filtertabs-container"
             {...slideAnimation("up")}
