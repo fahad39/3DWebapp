@@ -8,6 +8,7 @@ import { download } from "../assets";
 import { downloadCanvasToImage, reader } from "../config/helpers";
 import { EditorTabs, FilterTabs, DecalTypes } from "../config/constants";
 import { fadeAnimation, slideAnimation } from "../config/motion";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   AIPicker,
   ColorPicker,
@@ -34,6 +35,7 @@ const Customizer = () => {
   const generateTabContent = () => {
     switch (activeEditorTab) {
       case "colorpicker":
+        console.log("err");
         return <ColorPicker />;
       case "filepicker":
         return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
@@ -56,7 +58,7 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-      const response = await fetch(config.development.backendUrl, {
+      const response = await fetch(`${config.development.backendUrl}/dalle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,12 +89,65 @@ const Customizer = () => {
     }
   };
 
+  const makepayment = async () => {
+    const stripe = await loadStripe(
+      "pk_test_51QkRV3INt3r69nGPCuo0ac7OvQir2cq3VdSWrhfn31LZTg3VVAqAWLPO0S69eZUWbkaiFMfVd12esT6IDUuXFRW900ul18ACdq"
+    );
+    console.log("calling function");
+    const response = await fetch(
+      `${config.development.backendUrl}/stripe/create-checkout-session`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          img: snap.logoDecal,
+        }),
+      }
+    );
+
+    const session = await response.json();
+    console.log("success", session);
+    const result = stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if ((await result).error) {
+      alert("An error has occured");
+    } else {
+      downloadImage();
+    }
+  };
+  const downloadImage = () => {
+    // Convert base64 to Blob
+    console.log(snap.logoDecal);
+    const blob = fetch(snap.logoDecal)
+      .then((res) => res.blob())
+      .then((blob) => {
+        // Create a temporary link to trigger the download
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "image.jpg"; // Specify the filename
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url); // Clean up the URL object
+      })
+      .catch((err) => console.error("Failed to download image", err));
+  };
   const handleActiveFilterTab = (tabName) => {
     switch (tabName) {
       case "logoShirt":
         state.isLogoTexture = !activeFilterTab[tabName];
         break;
       case "stylishShirt":
+        state.isFullTexture = !activeFilterTab[tabName];
+        break;
+      case "download":
+        makepayment();
+        // downloadImage();
         state.isFullTexture = !activeFilterTab[tabName];
         break;
       default:
