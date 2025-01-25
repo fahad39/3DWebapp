@@ -70,7 +70,7 @@ const Customizer = () => {
 
     try {
       setGeneratingImg(true);
-      const response = await fetch(`${config.development.backendUrl}/dalle`, {
+      const response = await fetch(`${config.production.backendUrl}/dalle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ const Customizer = () => {
 
   const makepayment = async () => {
     setDiableDownload(true);
-    const stripe = await loadStripe(config.development.stripePublicKey);
+    const stripe = await loadStripe(config.production.stripePublicKey);
     // Save the canvas state to local storage
     const canvas = document.querySelector("canvas");
     if (canvas) {
@@ -111,7 +111,7 @@ const Customizer = () => {
       localStorage.setItem("canvasState", imageURL); // Save to local storage
     }
     const response = await fetch(
-      `${config.development.backendUrl}/stripe/create-checkout-session`,
+      `${config.production.backendUrl}/stripe/create-checkout-session`,
       {
         method: "POST",
         headers: {
