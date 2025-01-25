@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSnapshot } from "valtio";
 import state from "../store";
@@ -12,6 +12,40 @@ import { CustomButton } from "../components";
 
 const Home = () => {
   const snap = useSnapshot(state);
+
+  useEffect(() => {
+    // Check for the query parameter
+    const queryParams = new URLSearchParams(window.location.search);
+    const paymentStatus = queryParams.get("payment");
+
+    if (paymentStatus === "success") {
+      // Restore the canvas state from local storage
+
+      const imageURL = localStorage.getItem("canvasState"); // Retrieve from local storage
+      if (imageURL) {
+        downloadImage(imageURL);
+      }
+
+      // Clear the query parameter
+      const newUrl = window.location.pathname; // Get the URL without query parameters
+      window.history.replaceState({}, document.title, newUrl); // Update the URL
+
+      // Clear the saved state from local storage
+      localStorage.removeItem("canvasState");
+    }
+  }, []);
+
+  const downloadImage = (imageURL) => {
+    // Create a temporary <a> element
+    const link = document.createElement("a");
+    link.href = imageURL;
+    link.download = "canvas-image.png"; // Name of the downloaded file
+
+    // Trigger the download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <AnimatePresence>
       {snap.intro && (

@@ -21,7 +21,7 @@ const Customizer = () => {
   const snap = useSnapshot(state);
 
   const [file, setFile] = useState("");
-
+  const [diableDownload, setDiableDownload] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [generatingImg, setGeneratingImg] = useState(false);
 
@@ -31,11 +31,24 @@ const Customizer = () => {
     stylishShirt: false,
   });
 
+  useEffect(() => {
+    // Check for the query parameter
+    const queryParams = new URLSearchParams(window.location.search);
+    const paymentStatus = queryParams.get("payment");
+
+    if (paymentStatus === "success") {
+      // Trigger your function here
+      downloadImage();
+
+      // Clear the query parameter
+      const newUrl = window.location.pathname; // Get the URL without query parameters
+      window.history.replaceState({}, document.title, newUrl); // Update the URL
+    }
+  }, []);
   // show tab content depending on the activeTab
   const generateTabContent = () => {
     switch (activeEditorTab) {
       case "colorpicker":
-        console.log("err");
         return <ColorPicker />;
       case "filepicker":
         return <FilePicker file={file} setFile={setFile} readFile={readFile} />;
@@ -90,10 +103,16 @@ const Customizer = () => {
   };
 
   const makepayment = async () => {
+    setDiableDownload(true);
     const stripe = await loadStripe(
       "pk_test_51QkRV3INt3r69nGPCuo0ac7OvQir2cq3VdSWrhfn31LZTg3VVAqAWLPO0S69eZUWbkaiFMfVd12esT6IDUuXFRW900ul18ACdq"
     );
-    console.log("calling function");
+    // Save the canvas state to local storage
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      const imageURL = canvas.toDataURL("image/png"); // Convert canvas to data URL
+      localStorage.setItem("canvasState", imageURL); // Save to local storage
+    }
     const response = await fetch(
       `${config.development.backendUrl}/stripe/create-checkout-session`,
       {
@@ -108,35 +127,16 @@ const Customizer = () => {
     );
 
     const session = await response.json();
-    console.log("success", session);
+    setDiableDownload(false);
     const result = stripe.redirectToCheckout({
       sessionId: session.id,
     });
 
     if ((await result).error) {
       alert("An error has occured");
-    } else {
-      downloadImage();
     }
   };
-  const downloadImage = () => {
-    // Convert base64 to Blob
-    console.log(snap.logoDecal);
-    const blob = fetch(snap.logoDecal)
-      .then((res) => res.blob())
-      .then((blob) => {
-        // Create a temporary link to trigger the download
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "image.jpg"; // Specify the filename
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url); // Clean up the URL object
-      })
-      .catch((err) => console.error("Failed to download image", err));
-  };
+
   const handleActiveFilterTab = (tabName) => {
     switch (tabName) {
       case "logoShirt":
@@ -146,17 +146,14 @@ const Customizer = () => {
         state.isFullTexture = !activeFilterTab[tabName];
         break;
       case "download":
+        if (diableDownload) break;
         makepayment();
-        // downloadImage();
-        state.isFullTexture = !activeFilterTab[tabName];
         break;
       default:
         state.isLogoTexture = true;
         state.isFullTexture = false;
         break;
     }
-
-    // after setting the state, activeFilterTab is updated
 
     setActiveFilterTab((prevState) => {
       return {
