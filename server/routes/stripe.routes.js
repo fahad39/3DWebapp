@@ -23,8 +23,8 @@ router.route("/create-checkout-session").post(async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: devSucessURL,
-      cancel_url: devCancelURL,
+      success_url: prodSuccessURL,
+      cancel_url: prodCancelURL,
     });
     res.json({ id: session.id });
   } catch (error) {
