@@ -4,8 +4,7 @@ import { useSnapshot } from "valtio";
 
 import config from "../config/config";
 import state from "../store";
-import { download } from "../assets";
-import { downloadCanvasToImage, reader } from "../config/helpers";
+import { reader } from "../config/helpers";
 import { EditorTabs, FilterTabs, DecalTypes } from "../config/constants";
 import { fadeAnimation, slideAnimation } from "../config/motion";
 import { loadStripe } from "@stripe/stripe-js";
@@ -104,9 +103,7 @@ const Customizer = () => {
 
   const makepayment = async () => {
     setDiableDownload(true);
-    const stripe = await loadStripe(
-      "pk_test_51QkRV3INt3r69nGPCuo0ac7OvQir2cq3VdSWrhfn31LZTg3VVAqAWLPO0S69eZUWbkaiFMfVd12esT6IDUuXFRW900ul18ACdq"
-    );
+    const stripe = await loadStripe(config.development.stripePublicKey);
     // Save the canvas state to local storage
     const canvas = document.querySelector("canvas");
     if (canvas) {
