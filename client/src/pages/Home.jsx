@@ -33,6 +33,15 @@ const Home = () => {
       // Clear the saved state from local storage
       localStorage.removeItem("canvasState");
     }
+    if (paymentStatus === "cancel") {
+      alert("Payment failed. Try again");
+      // Clear the query parameter
+      const newUrl = window.location.pathname; // Get the URL without query parameters
+      window.history.replaceState({}, document.title, newUrl); // Update the URL
+
+      // Clear the saved state from local storage
+      localStorage.removeItem("canvasState");
+    }
   }, []);
 
   const downloadImage = (imageURL) => {

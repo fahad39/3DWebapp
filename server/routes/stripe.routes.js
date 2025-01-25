@@ -6,6 +6,10 @@ dotenv.config();
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET);
+const devSucessURL = "http://localhost:5173/?payment=success";
+const prodSuccessURL = "https://3d-webapp-ebon.vercel.app/?payment=success";
+const devCancelURL = "http://localhost:5173/?payment=cancel";
+const prodCancelURL = "https://3d-webapp-ebon.vercel.app/?payment=cancel";
 
 router.route("/create-checkout-session").post(async (req, res) => {
   try {
@@ -19,8 +23,8 @@ router.route("/create-checkout-session").post(async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: `http://localhost:5173/?payment=success`,
-      cancel_url: `http://localhost:5173/`,
+      success_url: devSucessURL,
+      cancel_url: devCancelURL,
     });
     res.json({ id: session.id });
   } catch (error) {
